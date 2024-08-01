@@ -4,19 +4,28 @@
       <v-radio v-for="type in barrierTypes" :key="type.value" :label="type.label" :value="type.value" />
     </v-radio-group>
     <v-textarea v-model="description" label="詳細説明" />
-    <v-btn type="submit" color="primary">登録</v-btn>
+    <v-text-field v-model.number="lat" label="緯度" type="number" step="0.000001" />
+    <v-text-field v-model.number="lng" label="経度" type="number" step="0.000001" />
+    <v-btn type="submit" color="primary">{{ editingBarrier ? '更新' : '登録' }}</v-btn>
+    <v-btn v-if="editingBarrier" @click="cancelEdit" color="secondary" class="ml-2">キャンセル</v-btn>
   </v-form>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 import { useBarrierStore } from '~/stores/barrier'
 import { z } from 'zod'
 
+const props = defineProps<{
+  editingBarrier: Barrier | null
+}>()
+
 const barrierStore = useBarrierStore()
 
-const barrierType = ref<string>('')
-const description = ref<string>('')
+const barrierType = ref('')
+const description = ref('')
+const lat = ref(35.6762)
+const lng = ref(139.6503)
 
 const barrierTypes = [
   { label: '坂道', value: 'slope' },
@@ -26,7 +35,9 @@ const barrierTypes = [
 
 const barrierSchema = z.object({
   type: z.enum(['slope', 'step', 'stairs']),
-  description: z.string().min(1).max(200)
+  description: z.string().min(1).max(200),
+  lat: z.number().min(-90).max(90),
+  lng: z.number().min(-180).max(180)
 })
 
 type BarrierData = z.infer<typeof barrierSchema>
@@ -35,17 +46,41 @@ const submitBarrier = () => {
   try {
     const validatedData: BarrierData = barrierSchema.parse({
       type: barrierType.value,
-      description: description.value
+      description: description.value,
+      lat: lat.value,
+      lng: lng.value
     })
-    barrierStore.addBarrier({
-      ...validatedData,
-      lat: Math.random() * (35.7 - 35.6) + 35.6,
-      lng: Math.random() * (139.8 - 139.6) + 139.6
-    })
-    barrierType.value = ''
-    description.value = ''
+    if (props.editingBarrier) {
+      barrierStore.updateBarrier({ ...props.editingBarrier, ...validatedData })
+    } else {
+      barrierStore.addBarrier(validatedData)
+    }
+    resetForm()
   } catch (error) {
     console.error('Validation error:', error)
   }
 }
+
+const resetForm = () => {
+  barrierType.value = ''
+  description.value = ''
+  lat.value = 35.6762
+  lng.value = 139.6503
+}
+
+const cancelEdit = () => {
+  resetForm()
+  emit('cancel-edit')
+}
+
+watch(() => props.editingBarrier, (newBarrier) => {
+  if (newBarrier) {
+    barrierType.value = newBarrier.type
+    description.value = newBarrier.description
+    lat.value = newBarrier.lat
+    lng.value = newBarrier.lng
+  }
+})
+
+const emit = defineEmits(['cancel-edit'])
 </script>

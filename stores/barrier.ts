@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { collection, addDoc, getDocs } from 'firebase/firestore'
+import { collection, addDoc, getDocs, updateDoc, deleteDoc, doc } from 'firebase/firestore'
 import { useNuxtApp } from '#app'
 
 interface Barrier {
@@ -26,7 +26,30 @@ export const useBarrierStore = defineStore('barrier', {
     async addBarrier(barrier: Omit<Barrier, 'id'>) {
       const { $db } = useNuxtApp()
       const docRef = await addDoc(collection($db, 'barriers'), barrier)
-      this.barriers.push({ id: docRef.id, ...barrier })
+      const newBarrier = { id: docRef.id, ...barrier }
+      this.barriers.push(newBarrier)
+      return newBarrier
+    },
+    async updateBarrier(barrier: Barrier) {
+      if (!barrier.id) throw new Error('Barrier ID is required for update')
+      const { $db } = useNuxtApp()
+      const barrierRef = doc($db, 'barriers', barrier.id)
+      
+      // idを除外した更新用オブジェクトを作成
+      const { id, ...updateData } = barrier
+      
+      await updateDoc(barrierRef, updateData)
+      
+      const index = this.barriers.findIndex(b => b.id === barrier.id)
+      if (index !== -1) {
+        this.barriers[index] = barrier
+      }
+    },
+    async deleteBarrier(id: string) {
+      const { $db } = useNuxtApp()
+      const barrierRef = doc($db, 'barriers', id)
+      await deleteDoc(barrierRef)
+      this.barriers = this.barriers.filter(b => b.id !== id)
     }
   }
 })
