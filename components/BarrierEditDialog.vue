@@ -48,14 +48,14 @@
       <v-card-actions>
         <v-spacer></v-spacer>
         <v-btn color="blue darken-1" text @click="close">キャンセル</v-btn>
-        <v-btn color="blue darken-1" text @click="save">保存</v-btn>
+        <v-btn color="blue darken-1" text @click="save" :loading="isSaving">保存</v-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>
 </template>
 
 <script setup lang="ts">
-import { ref, watch, nextTick } from 'vue'
+import { ref, watch } from 'vue'
 import { useBarrierStore } from '~/stores/barrier'
 
 const props = defineProps<{
@@ -64,6 +64,7 @@ const props = defineProps<{
 
 const barrierStore = useBarrierStore()
 const dialog = ref(false)
+const isSaving = ref(false)
 const editedBarrier = ref<Barrier>({
   id: '',
   type: 'slope',
@@ -91,9 +92,15 @@ const close = () => {
 }
 
 const save = async () => {
-  await barrierStore.updateBarrier(editedBarrier.value)
-  await nextTick()
-  close()
+  isSaving.value = true
+  try {
+    await barrierStore.updateBarrier(editedBarrier.value)
+    close()
+  } catch (error) {
+    console.error('Error updating barrier:', error)
+  } finally {
+    isSaving.value = false
+  }
 }
 
 const emit = defineEmits(['close'])

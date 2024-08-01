@@ -26,7 +26,7 @@
         <v-card-text>本当にこのバリア情報を削除しますか？</v-card-text>
         <v-card-actions>
           <v-spacer></v-spacer>
-          <v-btn color="error" text @click="deleteBarrier">削除</v-btn>
+          <v-btn color="error" text @click="deleteBarrier" :loading="isDeleting">削除</v-btn>
           <v-btn color="primary" text @click="deleteDialog = false">キャンセル</v-btn>
         </v-card-actions>
       </v-card>
@@ -35,12 +35,13 @@
 </template>
 
 <script setup lang="ts">
-import { ref, nextTick } from 'vue'
+import { ref } from 'vue'
 import { useBarrierStore } from '~/stores/barrier'
 
 const barrierStore = useBarrierStore()
 
 const deleteDialog = ref(false)
+const isDeleting = ref(false)
 const barrierToDelete = ref<Barrier | null>(null)
 
 const getBarrierTypeLabel = (type: string): string => {
@@ -59,11 +60,19 @@ const confirmDelete = (barrier: Barrier) => {
 
 const deleteBarrier = async () => {
   if (barrierToDelete.value && barrierToDelete.value.id) {
-    await barrierStore.deleteBarrier(barrierToDelete.value.id)
-    await nextTick()
+    isDeleting.value = true
+    try {
+      await barrierStore.deleteBarrier(barrierToDelete.value.id)
+      // 削除後にマップの更新フラグを明示的に設定
+      barrierStore.$patch({ mapNeedsUpdate: true })
+    } catch (error) {
+      console.error('Error deleting barrier:', error)
+    } finally {
+      isDeleting.value = false
+      deleteDialog.value = false
+      barrierToDelete.value = null
+    }
   }
-  deleteDialog.value = false
-  barrierToDelete.value = null
 }
 
 defineEmits(['center-map', 'edit-barrier'])

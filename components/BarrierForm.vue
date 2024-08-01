@@ -15,7 +15,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch, nextTick } from 'vue'
+import { ref, watch } from 'vue'
 import { useBarrierStore } from '~/stores/barrier'
 import { z } from 'zod'
 
@@ -60,9 +60,8 @@ const submitBarrier = async () => {
     } else {
       await barrierStore.addBarrier(validatedData)
     }
-    await nextTick()
     resetForm()
-    emit('barrier-added') // 新しいイベントを発行
+    emit('barrier-added')
   } catch (error) {
     console.error('Validation error:', error)
   } finally {

@@ -52,6 +52,8 @@ const updateAllMarkers = () => {
     if (!barrier.id) return
     updateMarker(barrier)
   })
+
+  barrierStore.setMapUpdated()
 }
 
 const updateMarker = (barrier: Barrier) => {
@@ -84,13 +86,6 @@ const updateMarker = (barrier: Barrier) => {
   }
 }
 
-const removeMarker = (id: string) => {
-  if (markers.value[id]) {
-    markers.value[id].setMap(null)
-    delete markers.value[id]
-  }
-}
-
 const centerMapOnBarrier = (barrier: { lat: number; lng: number }) => {
   if (!map.value) return
   map.value.setCenter({ lat: barrier.lat, lng: barrier.lng })
@@ -101,32 +96,11 @@ onMounted(async () => {
   await initMap()
 })
 
-// Watch for changes in the barriers array
-watch(() => barrierStore.barriers, (newBarriers, oldBarriers) => {
-  if (!oldBarriers) {
+// Watch for changes in the barriers array and mapNeedsUpdate flag
+watch(() => [barrierStore.barriers, barrierStore.mapNeedsUpdate], () => {
+  if (barrierStore.mapNeedsUpdate) {
     updateAllMarkers()
-    return
   }
-
-  // Check for added or updated barriers
-  newBarriers.forEach(barrier => {
-    if (!barrier.id) return
-    const oldBarrier = oldBarriers.find(b => b.id === barrier.id)
-    if (!oldBarrier || 
-        oldBarrier.lat !== barrier.lat || 
-        oldBarrier.lng !== barrier.lng || 
-        oldBarrier.type !== barrier.type || 
-        oldBarrier.description !== barrier.description) {
-      updateMarker(barrier)
-    }
-  })
-
-  // Check for removed barriers
-  oldBarriers.forEach(oldBarrier => {
-    if (oldBarrier.id && !newBarriers.find(b => b.id === oldBarrier.id)) {
-      removeMarker(oldBarrier.id)
-    }
-  })
 }, { deep: true })
 
 defineExpose({ centerMapOnBarrier })
