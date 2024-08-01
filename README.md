@@ -76,3 +76,4 @@ Check out the [deployment documentation](https://nuxt.com/docs/getting-started/d
 
 # 参考サイト
 - [Installation · Get Started with Nuxt](https://nuxt.com/docs/getting-started/installation)  
+- [Nuxt.js+Firebaseの認証・認可を実装した雛形プロジェクトを公開しました #JavaScript - Qiita](https://qiita.com/Yuta_Fujiwara/items/3c57c99399891ae3ff38)  
