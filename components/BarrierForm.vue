@@ -36,10 +36,20 @@
       </v-col>
     </v-row>
     
-    <v-btn @click="getCurrentLocation" color="secondary" text class="mb-2">
-      <v-icon left>mdi-crosshairs-gps</v-icon>
-      現在地を取得
-    </v-btn>
+    <v-row class="mb-4">
+      <v-col>
+        <v-btn @click="getCurrentLocation" color="secondary" text>
+          <v-icon left>mdi-crosshairs-gps</v-icon>
+          現在地を取得
+        </v-btn>
+      </v-col>
+      <v-col>
+        <v-btn @click="getMapCenter" color="info" text>
+          <v-icon left>mdi-map-marker</v-icon>
+          マップ中央を使用
+        </v-btn>
+      </v-col>
+    </v-row>
     
     <v-divider class="my-4"></v-divider>
     
@@ -73,7 +83,8 @@ import { useBarrierStore } from '~/stores/barrier'
 import { z } from 'zod'
 
 const props = defineProps<{
-  editingBarrier: Barrier | null
+  editingBarrier: Barrier | null,
+  mapRef: any // GoogleMapコンポーネントの参照
 }>()
 
 const barrierStore = useBarrierStore()
@@ -144,6 +155,16 @@ const getCurrentLocation = () => {
     })
   } else {
     console.error("Geolocation is not available in this browser.")
+  }
+}
+
+const getMapCenter = () => {
+  if (props.mapRef) {
+    const center = props.mapRef.getCenterPosition()
+    if (center) {
+      lat.value = center.lat
+      lng.value = center.lng
+    }
   }
 }
 

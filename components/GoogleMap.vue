@@ -92,6 +92,14 @@ const centerMapOnBarrier = (barrier: { lat: number; lng: number }) => {
   map.value.setZoom(15)
 }
 
+const getCenterPosition = () => {
+  if (map.value) {
+    const center = map.value.getCenter()
+    return { lat: center.lat(), lng: center.lng() }
+  }
+  return null
+}
+
 onMounted(async () => {
   await initMap()
 })
@@ -103,5 +111,5 @@ watch(() => [barrierStore.barriers, barrierStore.mapNeedsUpdate], () => {
   }
 }, { deep: true })
 
-defineExpose({ centerMapOnBarrier })
+defineExpose({ centerMapOnBarrier, getCenterPosition })
 </script>

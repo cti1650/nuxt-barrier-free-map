@@ -18,6 +18,7 @@
               <v-card-text>
                 <BarrierForm 
                   :editing-barrier="editingBarrier" 
+                  :map-ref="mapRef"
                   @cancel-edit="cancelEdit" 
                   @barrier-added="onBarrierAdded"
                 />
