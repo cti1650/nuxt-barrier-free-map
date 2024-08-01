@@ -35,7 +35,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, nextTick } from 'vue'
 import { useBarrierStore } from '~/stores/barrier'
 
 const barrierStore = useBarrierStore()
@@ -57,9 +57,10 @@ const confirmDelete = (barrier: Barrier) => {
   deleteDialog.value = true
 }
 
-const deleteBarrier = () => {
+const deleteBarrier = async () => {
   if (barrierToDelete.value && barrierToDelete.value.id) {
-    barrierStore.deleteBarrier(barrierToDelete.value.id)
+    await barrierStore.deleteBarrier(barrierToDelete.value.id)
+    await nextTick()
   }
   deleteDialog.value = false
   barrierToDelete.value = null

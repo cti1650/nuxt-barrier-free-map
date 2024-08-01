@@ -7,13 +7,15 @@
     <v-text-field v-model.number="lat" label="緯度" type="number" step="0.000001" />
     <v-text-field v-model.number="lng" label="経度" type="number" step="0.000001" />
     <v-btn @click="getCurrentLocation" color="secondary" class="mb-2">現在地を取得</v-btn>
-    <v-btn type="submit" color="primary" class="ml-2">{{ editingBarrier ? '更新' : '登録' }}</v-btn>
+    <v-btn type="submit" color="primary" class="ml-2" :loading="isSubmitting">
+      {{ editingBarrier ? '更新' : '登録' }}
+    </v-btn>
     <v-btn v-if="editingBarrier" @click="cancelEdit" color="error" class="ml-2">キャンセル</v-btn>
   </v-form>
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue'
+import { ref, watch, nextTick } from 'vue'
 import { useBarrierStore } from '~/stores/barrier'
 import { z } from 'zod'
 
@@ -27,6 +29,7 @@ const barrierType = ref('')
 const description = ref('')
 const lat = ref(35.6762)
 const lng = ref(139.6503)
+const isSubmitting = ref(false)
 
 const barrierTypes = [
   { label: '坂道', value: 'slope' },
@@ -43,8 +46,9 @@ const barrierSchema = z.object({
 
 type BarrierData = z.infer<typeof barrierSchema>
 
-const submitBarrier = () => {
+const submitBarrier = async () => {
   try {
+    isSubmitting.value = true
     const validatedData: BarrierData = barrierSchema.parse({
       type: barrierType.value,
       description: description.value,
@@ -52,13 +56,17 @@ const submitBarrier = () => {
       lng: lng.value
     })
     if (props.editingBarrier) {
-      barrierStore.updateBarrier({ ...props.editingBarrier, ...validatedData })
+      await barrierStore.updateBarrier({ ...props.editingBarrier, ...validatedData })
     } else {
-      barrierStore.addBarrier(validatedData)
+      await barrierStore.addBarrier(validatedData)
     }
+    await nextTick()
     resetForm()
+    emit('barrier-added') // 新しいイベントを発行
   } catch (error) {
     console.error('Validation error:', error)
+  } finally {
+    isSubmitting.value = false
   }
 }
 
@@ -96,5 +104,5 @@ watch(() => props.editingBarrier, (newBarrier) => {
   }
 })
 
-const emit = defineEmits(['cancel-edit'])
+const emit = defineEmits(['cancel-edit', 'barrier-added'])
 </script>

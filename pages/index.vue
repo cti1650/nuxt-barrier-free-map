@@ -10,7 +10,11 @@
         <GoogleMap ref="mapRef" />
       </v-col>
       <v-col cols="12" md="4">
-        <BarrierForm :editing-barrier="editingBarrier" @cancel-edit="cancelEdit" />
+        <BarrierForm 
+          :editing-barrier="editingBarrier" 
+          @cancel-edit="cancelEdit" 
+          @barrier-added="onBarrierAdded"
+        />
         <BarrierList @center-map="centerMap" @edit-barrier="editBarrier" />
       </v-col>
     </v-row>
@@ -48,5 +52,10 @@ const cancelEdit = () => {
 
 const closeEditDialog = () => {
   editingBarrier.value = null
+}
+
+const onBarrierAdded = () => {
+  // バリア情報が追加されたときの処理
+  // 必要に応じて追加のアクションを実行できます
 }
 </script>

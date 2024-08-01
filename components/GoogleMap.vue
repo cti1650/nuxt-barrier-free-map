@@ -33,21 +33,40 @@ const initMap = async () => {
 
   infoWindow.value = new google.maps.InfoWindow()
 
-  updateMarkers()
+  updateAllMarkers()
 }
 
-const updateMarkers = () => {
+const updateAllMarkers = () => {
   if (!map.value) return
 
-  // Remove all existing markers
-  Object.values(markers.value).forEach(marker => marker.setMap(null))
-  markers.value = {}
+  // Remove markers that no longer exist in the store
+  Object.keys(markers.value).forEach(id => {
+    if (!barrierStore.barriers.find(b => b.id === id)) {
+      markers.value[id].setMap(null)
+      delete markers.value[id]
+    }
+  })
 
-  // Add new markers
+  // Add or update markers
   barrierStore.barriers.forEach(barrier => {
     if (!barrier.id) return
+    updateMarker(barrier)
+  })
+}
+
+const updateMarker = (barrier: Barrier) => {
+  if (!map.value || !barrier.id) return
+
+  const position = { lat: barrier.lat, lng: barrier.lng }
+
+  if (markers.value[barrier.id]) {
+    // Update existing marker
+    markers.value[barrier.id].setPosition(position)
+    markers.value[barrier.id].setTitle(barrier.type)
+  } else {
+    // Create new marker
     const marker = new google.maps.Marker({
-      position: { lat: barrier.lat, lng: barrier.lng },
+      position: position,
       map: map.value,
       title: barrier.type
     })
@@ -62,7 +81,14 @@ const updateMarkers = () => {
     })
 
     markers.value[barrier.id] = marker
-  })
+  }
+}
+
+const removeMarker = (id: string) => {
+  if (markers.value[id]) {
+    markers.value[id].setMap(null)
+    delete markers.value[id]
+  }
 }
 
 const centerMapOnBarrier = (barrier: { lat: number; lng: number }) => {
@@ -75,7 +101,33 @@ onMounted(async () => {
   await initMap()
 })
 
-watch(() => barrierStore.barriers, updateMarkers, { deep: true })
+// Watch for changes in the barriers array
+watch(() => barrierStore.barriers, (newBarriers, oldBarriers) => {
+  if (!oldBarriers) {
+    updateAllMarkers()
+    return
+  }
+
+  // Check for added or updated barriers
+  newBarriers.forEach(barrier => {
+    if (!barrier.id) return
+    const oldBarrier = oldBarriers.find(b => b.id === barrier.id)
+    if (!oldBarrier || 
+        oldBarrier.lat !== barrier.lat || 
+        oldBarrier.lng !== barrier.lng || 
+        oldBarrier.type !== barrier.type || 
+        oldBarrier.description !== barrier.description) {
+      updateMarker(barrier)
+    }
+  })
+
+  // Check for removed barriers
+  oldBarriers.forEach(oldBarrier => {
+    if (oldBarrier.id && !newBarriers.find(b => b.id === oldBarrier.id)) {
+      removeMarker(oldBarrier.id)
+    }
+  })
+}, { deep: true })
 
 defineExpose({ centerMapOnBarrier })
 </script>

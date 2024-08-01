@@ -55,7 +55,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue'
+import { ref, watch, nextTick } from 'vue'
 import { useBarrierStore } from '~/stores/barrier'
 
 const props = defineProps<{
@@ -90,8 +90,9 @@ const close = () => {
   emit('close')
 }
 
-const save = () => {
-  barrierStore.updateBarrier(editedBarrier.value)
+const save = async () => {
+  await barrierStore.updateBarrier(editedBarrier.value)
+  await nextTick()
   close()
 }
 
