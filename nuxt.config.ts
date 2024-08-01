@@ -9,6 +9,9 @@ export default defineNuxtConfig({
   build: {
     transpile: ['vuetify', '@googlemaps/js-api-loader']
   },
+  plugins: [
+    '~/plugins/firebase.ts'
+  ],
   vite: {
     define: {
       'process.env.DEBUG': false,

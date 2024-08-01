@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import { collection, addDoc, getDocs } from 'firebase/firestore'
-import { db } from '~/plugins/firebase'
+import { useNuxtApp } from '#app'
 
 interface Barrier {
   id?: string
@@ -16,14 +16,16 @@ export const useBarrierStore = defineStore('barrier', {
   }),
   actions: {
     async fetchBarriers() {
-      const querySnapshot = await getDocs(collection(db, 'barriers'))
+      const { $db } = useNuxtApp()
+      const querySnapshot = await getDocs(collection($db, 'barriers'))
       this.barriers = querySnapshot.docs.map(doc => ({
         id: doc.id,
         ...(doc.data() as Omit<Barrier, 'id'>)
       }))
     },
     async addBarrier(barrier: Omit<Barrier, 'id'>) {
-      const docRef = await addDoc(collection(db, 'barriers'), barrier)
+      const { $db } = useNuxtApp()
+      const docRef = await addDoc(collection($db, 'barriers'), barrier)
       this.barriers.push({ id: docRef.id, ...barrier })
     }
   }

@@ -1,17 +1,21 @@
 import { initializeApp } from 'firebase/app'
 import { getFirestore } from 'firebase/firestore'
 import { getAnalytics } from "firebase/analytics"
-import { useRuntimeConfig } from '#app'
 
-const config = useRuntimeConfig()
+export default defineNuxtPlugin(() => {
+  const config = useRuntimeConfig()
 
-const firebaseConfig = config.public.firebaseConfig
+  const firebaseConfig = config.public.firebaseConfig
 
-// Firebaseの初期化
-const app = initializeApp(firebaseConfig)
+  // Firebaseの初期化
+  const app = initializeApp(firebaseConfig)
 
-// Firestoreの取得
-export const db = getFirestore(app)
+  // Firestoreの取得
+  const db = getFirestore(app)
 
-// Analyticsの取得
-export const analytics = getAnalytics(app);
+  return {
+    provide: {
+      db
+    }
+  }
+})
