@@ -11,6 +11,8 @@
               <v-select
                 v-model="editedBarrier.type"
                 :items="barrierTypes"
+                item-title="text"
+                item-value="value"
                 label="バリアタイプ"
                 required
               ></v-select>

@@ -13,7 +13,7 @@ import { useRuntimeConfig } from '#app'
 const mapElement = ref<HTMLElement | null>(null)
 const barrierStore = useBarrierStore()
 const map = ref<google.maps.Map | null>(null)
-const markers = ref<google.maps.Marker[]>([])
+const markers = ref<{[key: string]: google.maps.Marker}>({})
 const infoWindow = ref<google.maps.InfoWindow | null>(null)
 
 const initMap = async () => {
@@ -33,31 +33,19 @@ const initMap = async () => {
 
   infoWindow.value = new google.maps.InfoWindow()
 
-  map.value.addListener('bounds_changed', () => {
-    updateVisibleMarkers()
-  })
+  updateMarkers()
 }
 
-const updateVisibleMarkers = () => {
+const updateMarkers = () => {
   if (!map.value) return
 
-  const bounds = map.value.getBounds()
-  markers.value.forEach(marker => {
-    if (bounds?.contains(marker.getPosition()!)) {
-      marker.setMap(map.value)
-    } else {
-      marker.setMap(null)
-    }
-  })
-}
+  // Remove all existing markers
+  Object.values(markers.value).forEach(marker => marker.setMap(null))
+  markers.value = {}
 
-const createMarkers = () => {
-  if (!map.value) return
-
-  markers.value.forEach(marker => marker.setMap(null))
-  markers.value = []
-
+  // Add new markers
   barrierStore.barriers.forEach(barrier => {
+    if (!barrier.id) return
     const marker = new google.maps.Marker({
       position: { lat: barrier.lat, lng: barrier.lng },
       map: map.value,
@@ -73,10 +61,8 @@ const createMarkers = () => {
       infoWindow.value.open(map.value, marker)
     })
 
-    markers.value.push(marker)
+    markers.value[barrier.id] = marker
   })
-
-  updateVisibleMarkers()
 }
 
 const centerMapOnBarrier = (barrier: { lat: number; lng: number }) => {
@@ -87,10 +73,9 @@ const centerMapOnBarrier = (barrier: { lat: number; lng: number }) => {
 
 onMounted(async () => {
   await initMap()
-  createMarkers()
 })
 
-watch(() => barrierStore.barriers, createMarkers, { deep: true })
+watch(() => barrierStore.barriers, updateMarkers, { deep: true })
 
 defineExpose({ centerMapOnBarrier })
 </script>
