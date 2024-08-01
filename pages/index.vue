@@ -1,25 +1,36 @@
 <template>
-  <v-container>
-    <v-row>
-      <v-col cols="12">
-        <h1 class="text-h4 mb-4">バリアフリーマップ</h1>
-      </v-col>
-    </v-row>
-    <v-row>
-      <v-col cols="12" md="8">
-        <GoogleMap ref="mapRef" />
-      </v-col>
-      <v-col cols="12" md="4">
-        <BarrierForm 
-          :editing-barrier="editingBarrier" 
-          @cancel-edit="cancelEdit" 
-          @barrier-added="onBarrierAdded"
-        />
-        <BarrierList @center-map="centerMap" @edit-barrier="editBarrier" />
-      </v-col>
-    </v-row>
+  <v-app>
+    <v-app-bar app color="primary" dark>
+      <v-app-bar-title>バリアフリーマップ</v-app-bar-title>
+    </v-app-bar>
+
+    <v-main>
+      <v-container fluid>
+        <v-row>
+          <v-col cols="12" md="8">
+            <v-card elevation="2" class="mb-4">
+              <GoogleMap ref="mapRef" />
+            </v-card>
+          </v-col>
+          <v-col cols="12" md="4">
+            <v-card elevation="2" class="mb-4">
+              <v-card-title>バリア情報登録</v-card-title>
+              <v-card-text>
+                <BarrierForm 
+                  :editing-barrier="editingBarrier" 
+                  @cancel-edit="cancelEdit" 
+                  @barrier-added="onBarrierAdded"
+                />
+              </v-card-text>
+            </v-card>
+            <BarrierList @center-map="centerMap" @edit-barrier="editBarrier" />
+          </v-col>
+        </v-row>
+      </v-container>
+    </v-main>
+
     <BarrierEditDialog :barrier="editingBarrier" @close="closeEditDialog" />
-  </v-container>
+  </v-app>
 </template>
 
 <script setup lang="ts">

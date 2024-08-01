@@ -1,16 +1,69 @@
 <template>
-  <v-form @submit.prevent="submitBarrier" class="mb-4">
-    <v-radio-group v-model="barrierType" label="バリアタイプ">
+  <v-form @submit.prevent="submitBarrier">
+    <v-radio-group v-model="barrierType" label="バリアタイプ" row>
       <v-radio v-for="type in barrierTypes" :key="type.value" :label="type.label" :value="type.value" />
     </v-radio-group>
-    <v-textarea v-model="description" label="詳細説明" />
-    <v-text-field v-model.number="lat" label="緯度" type="number" step="0.000001" />
-    <v-text-field v-model.number="lng" label="経度" type="number" step="0.000001" />
-    <v-btn @click="getCurrentLocation" color="secondary" class="mb-2">現在地を取得</v-btn>
-    <v-btn type="submit" color="primary" class="ml-2" :loading="isSubmitting">
-      {{ editingBarrier ? '更新' : '登録' }}
+    
+    <v-textarea
+      v-model="description"
+      label="詳細説明"
+      rows="3"
+      auto-grow
+      outlined
+      dense
+    />
+    
+    <v-row>
+      <v-col cols="6">
+        <v-text-field
+          v-model.number="lat"
+          label="緯度"
+          type="number"
+          step="0.000001"
+          outlined
+          dense
+        />
+      </v-col>
+      <v-col cols="6">
+        <v-text-field
+          v-model.number="lng"
+          label="経度"
+          type="number"
+          step="0.000001"
+          outlined
+          dense
+        />
+      </v-col>
+    </v-row>
+    
+    <v-btn @click="getCurrentLocation" color="secondary" text class="mb-2">
+      <v-icon left>mdi-crosshairs-gps</v-icon>
+      現在地を取得
     </v-btn>
-    <v-btn v-if="editingBarrier" @click="cancelEdit" color="error" class="ml-2">キャンセル</v-btn>
+    
+    <v-divider class="my-4"></v-divider>
+    
+    <v-row justify="end">
+      <v-col cols="auto">
+        <v-btn
+          v-if="editingBarrier"
+          @click="cancelEdit"
+          color="error"
+          text
+        >
+          キャンセル
+        </v-btn>
+      </v-col>
+      <v-col cols="auto">
+        <v-btn
+          type="submit"
+          color="primary"
+          :loading="isSubmitting"
+        >
+          {{ editingBarrier ? '更新' : '登録' }}
+        </v-btn>
+      </v-col>
+    </v-row>
   </v-form>
 </template>
 

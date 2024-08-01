@@ -15,6 +15,8 @@
                 item-value="value"
                 label="バリアタイプ"
                 required
+                outlined
+                dense
               ></v-select>
             </v-col>
             <v-col cols="12">
@@ -22,6 +24,10 @@
                 v-model="editedBarrier.description"
                 label="詳細説明"
                 required
+                rows="3"
+                auto-grow
+                outlined
+                dense
               ></v-textarea>
             </v-col>
             <v-col cols="6">
@@ -31,6 +37,8 @@
                 type="number"
                 step="0.000001"
                 required
+                outlined
+                dense
               ></v-text-field>
             </v-col>
             <v-col cols="6">
@@ -40,6 +48,8 @@
                 type="number"
                 step="0.000001"
                 required
+                outlined
+                dense
               ></v-text-field>
             </v-col>
           </v-row>

@@ -1,28 +1,41 @@
 <template>
   <v-card class="ma-2">
-    <v-card-title>登録されたバリア情報</v-card-title>
+    <v-card-title>
+      <v-icon left>mdi-format-list-bulleted</v-icon>
+      登録されたバリア情報
+    </v-card-title>
     <v-list>
       <v-list-item
         v-for="barrier in barrierStore.barriers"
         :key="barrier.id"
         @click="$emit('center-map', barrier)"
+        class="mb-2"
       >
-        <v-list-item-title>
-          <strong>{{ getBarrierTypeLabel(barrier.type) }}</strong>
-        </v-list-item-title>
-        <v-list-item-subtitle>
-          {{ barrier.description }}
-        </v-list-item-subtitle>
-        <template v-slot:append>
-          <v-btn icon="mdi-pencil" size="small" @click.stop="$emit('edit-barrier', barrier)"></v-btn>
-          <v-btn icon="mdi-delete" size="small" @click.stop="confirmDelete(barrier)"></v-btn>
-        </template>
+        <div class="d-flex align-center w-100">
+          <v-icon :color="getBarrierTypeColor(barrier.type)" class="mr-3">
+            {{ getBarrierTypeIcon(barrier.type) }}
+          </v-icon>
+          
+          <div class="flex-grow-1">
+            <div class="font-weight-medium">{{ getBarrierTypeLabel(barrier.type) }}</div>
+            <div class="text-caption">{{ barrier.description }}</div>
+          </div>
+          
+          <div class="ml-auto">
+            <v-btn icon small @click.stop="$emit('edit-barrier', barrier)" class="mr-2">
+              <v-icon color="grey lighten-1">mdi-pencil</v-icon>
+            </v-btn>
+            <v-btn icon small @click.stop="confirmDelete(barrier)">
+              <v-icon color="grey lighten-1">mdi-delete</v-icon>
+            </v-btn>
+          </div>
+        </div>
       </v-list-item>
     </v-list>
 
     <v-dialog v-model="deleteDialog" max-width="300px">
       <v-card>
-        <v-card-title>バリア情報の削除</v-card-title>
+        <v-card-title class="headline">バリア情報の削除</v-card-title>
         <v-card-text>本当にこのバリア情報を削除しますか？</v-card-text>
         <v-card-actions>
           <v-spacer></v-spacer>
@@ -53,6 +66,24 @@ const getBarrierTypeLabel = (type: string): string => {
   return types[type] || type
 }
 
+const getBarrierTypeIcon = (type: string): string => {
+  const icons: { [key: string]: string } = {
+    slope: 'mdi-slope-uphill',
+    step: 'mdi-stairs',
+    stairs: 'mdi-stairs'
+  }
+  return icons[type] || 'mdi-alert-circle'
+}
+
+const getBarrierTypeColor = (type: string): string => {
+  const colors: { [key: string]: string } = {
+    slope: 'orange',
+    step: 'blue',
+    stairs: 'purple'
+  }
+  return colors[type] || 'grey'
+}
+
 const confirmDelete = (barrier: Barrier) => {
   barrierToDelete.value = barrier
   deleteDialog.value = true
@@ -63,7 +94,6 @@ const deleteBarrier = async () => {
     isDeleting.value = true
     try {
       await barrierStore.deleteBarrier(barrierToDelete.value.id)
-      // 削除後にマップの更新フラグを明示的に設定
       barrierStore.$patch({ mapNeedsUpdate: true })
     } catch (error) {
       console.error('Error deleting barrier:', error)
