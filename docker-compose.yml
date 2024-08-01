@@ -1,0 +1,39 @@
+version: '3.8'
+services:
+  firebase-emulator:
+    image: andreysenov/firebase-tools
+    volumes:
+      - .:/home/node/app
+      - firebase_emulator_data:/home/node/.cache
+    ports:
+      - "4000:4000"
+      - "9099:9099"
+      - "5001:5001"
+      - "8080:8080"
+      - "9000:9000"
+      - "5000:5000"
+    environment:
+      - GOOGLE_APPLICATION_CREDENTIALS=/home/node/app/service-account.json
+    working_dir: /home/node/app
+    user: "${UID:-1000}:${GID:-1000}"
+    command: >
+      sh -c "
+        npm install && npm run build &&
+        firebase emulators:start --project demo-project
+      "
+
+  nuxt-app:
+    image: node:18
+    volumes:
+      - .:/app
+    working_dir: /app
+    ports:
+      - "3000:3000"
+    environment:
+      - HOST=0.0.0.0
+    user: "${UID:-1000}:${GID:-1000}"
+    command: >
+      sh -c "npm install && npm run dev"
+
+volumes:
+  firebase_emulator_data:

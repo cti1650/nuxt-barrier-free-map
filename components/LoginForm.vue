@@ -36,7 +36,7 @@ import { ref, onMounted } from 'vue'
 import { useNuxtApp } from '#app'
 import { signInWithEmailAndPassword, createUserWithEmailAndPassword, signInWithPopup, signInWithRedirect, getRedirectResult } from 'firebase/auth'
 
-const { $auth, $googleProvider } = useNuxtApp()
+const { $auth, $provideAuth } = useNuxtApp()
 
 const email = ref('')
 const password = ref('')
@@ -70,25 +70,16 @@ const toggleMode = () => {
 const signInWithGoogle = async () => {
   try {
     isLoading.value = true
-    // まずポップアップでの認証を試みる
-    await signInWithPopup($auth, $googleProvider)
-    // 認証成功
-    console.log('Google authentication successful')
-  } catch (error: any) {
-    if (error.code === 'auth/popup-blocked') {
-      // ポップアップがブロックされた場合、リダイレクト認証を試みる
-      try {
-        await signInWithRedirect($auth, $googleProvider)
-      } catch (redirectError) {
-        console.error('Redirect authentication error:', redirectError)
-        errorMessage.value = 'Googleログインに失敗しました。もう一度お試しください。'
-        showError.value = true
-      }
+    if (process.env.NODE_ENV === 'development' && process.env.USE_FIREBASE_EMULATOR === 'true') {
+      await $provideAuth.emulatorGoogleSignIn()
     } else {
-      console.error('Google authentication error:', error)
-      errorMessage.value = 'Googleログインに失敗しました。もう一度お試しください。'
-      showError.value = true
+      await $provideAuth.googleSignIn()
     }
+    console.log('Google authentication successful')
+  } catch (error) {
+    console.error('Google authentication error:', error)
+    errorMessage.value = 'Googleログインに失敗しました。もう一度お試しください。'
+    showError.value = true
   } finally {
     isLoading.value = false
   }

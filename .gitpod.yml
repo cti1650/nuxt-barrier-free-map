@@ -5,7 +5,38 @@
 # Learn more from ready-to-use templates: https://www.gitpod.io/docs/introduction/getting-started/quickstart
 
 tasks:
-  - init: yarn install && cp .env.example .env && yarn run build
-    command: yarn run dev
+  - init: |
+      yarn install
+      cp .env.example .env
+      yarn run build
+      echo "export UID=$(id -u)" >> ~/.bashrc
+      echo "export GID=$(id -g)" >> ~/.bashrc
+    command: |
+      source ~/.bashrc
+      yarn run dev
 
+  - command: |
+      source ~/.bashrc
+      docker-compose up
 
+ports:
+  - port: 3000
+    onOpen: open-preview
+  - port: 4000
+    onOpen: open-browser
+  - port: 9099
+    onOpen: ignore
+  - port: 5001
+    onOpen: ignore
+  - port: 8080
+    onOpen: ignore
+  - port: 9000
+    onOpen: ignore
+  - port: 5000
+    onOpen: ignore
+
+vscode:
+  extensions:
+    - dbaeumer.vscode-eslint
+    - esbenp.prettier-vscode
+    - vue.volar
