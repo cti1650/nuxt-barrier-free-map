@@ -6,7 +6,6 @@
         v-for="barrier in barrierStore.barriers"
         :key="barrier.id"
         @click="$emit('center-map', barrier)"
-        style="cursor: pointer;"
       >
         <v-list-item-title>
           <strong>{{ getBarrierTypeLabel(barrier.type) }}</strong>
@@ -14,15 +13,35 @@
         <v-list-item-subtitle>
           {{ barrier.description }}
         </v-list-item-subtitle>
+        <template v-slot:append>
+          <v-btn icon="mdi-pencil" size="small" @click.stop="$emit('edit-barrier', barrier)"></v-btn>
+          <v-btn icon="mdi-delete" size="small" @click.stop="confirmDelete(barrier)"></v-btn>
+        </template>
       </v-list-item>
     </v-list>
+
+    <v-dialog v-model="deleteDialog" max-width="300px">
+      <v-card>
+        <v-card-title>バリア情報の削除</v-card-title>
+        <v-card-text>本当にこのバリア情報を削除しますか？</v-card-text>
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn color="error" text @click="deleteBarrier">削除</v-btn>
+          <v-btn color="primary" text @click="deleteDialog = false">キャンセル</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
   </v-card>
 </template>
 
 <script setup lang="ts">
+import { ref } from 'vue'
 import { useBarrierStore } from '~/stores/barrier'
 
 const barrierStore = useBarrierStore()
+
+const deleteDialog = ref(false)
+const barrierToDelete = ref<Barrier | null>(null)
 
 const getBarrierTypeLabel = (type: string): string => {
   const types: { [key: string]: string } = {
@@ -33,5 +52,18 @@ const getBarrierTypeLabel = (type: string): string => {
   return types[type] || type
 }
 
-defineEmits(['center-map'])
+const confirmDelete = (barrier: Barrier) => {
+  barrierToDelete.value = barrier
+  deleteDialog.value = true
+}
+
+const deleteBarrier = () => {
+  if (barrierToDelete.value && barrierToDelete.value.id) {
+    barrierStore.deleteBarrier(barrierToDelete.value.id)
+  }
+  deleteDialog.value = false
+  barrierToDelete.value = null
+}
+
+defineEmits(['center-map', 'edit-barrier'])
 </script>

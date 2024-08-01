@@ -2,7 +2,7 @@
   <v-dialog v-model="dialog" max-width="500px">
     <v-card>
       <v-card-title>
-        <span class="headline">{{ editedBarrier.id ? 'バリア情報の編集' : 'バリア情報の追加' }}</span>
+        <span class="headline">バリア情報の編集</span>
       </v-card-title>
       <v-card-text>
         <v-container>
@@ -47,7 +47,6 @@
         <v-spacer></v-spacer>
         <v-btn color="blue darken-1" text @click="close">キャンセル</v-btn>
         <v-btn color="blue darken-1" text @click="save">保存</v-btn>
-        <v-btn v-if="editedBarrier.id" color="red darken-1" text @click="deleteBarrier">削除</v-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>
@@ -90,18 +89,7 @@ const close = () => {
 }
 
 const save = () => {
-  if (editedBarrier.value.id) {
-    barrierStore.updateBarrier(editedBarrier.value)
-  } else {
-    barrierStore.addBarrier(editedBarrier.value)
-  }
-  close()
-}
-
-const deleteBarrier = () => {
-  if (editedBarrier.value.id) {
-    barrierStore.deleteBarrier(editedBarrier.value.id)
-  }
+  barrierStore.updateBarrier(editedBarrier.value)
   close()
 }
 

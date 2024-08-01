@@ -6,8 +6,9 @@
     <v-textarea v-model="description" label="詳細説明" />
     <v-text-field v-model.number="lat" label="緯度" type="number" step="0.000001" />
     <v-text-field v-model.number="lng" label="経度" type="number" step="0.000001" />
-    <v-btn type="submit" color="primary">{{ editingBarrier ? '更新' : '登録' }}</v-btn>
-    <v-btn v-if="editingBarrier" @click="cancelEdit" color="secondary" class="ml-2">キャンセル</v-btn>
+    <v-btn @click="getCurrentLocation" color="secondary" class="mb-2">現在地を取得</v-btn>
+    <v-btn type="submit" color="primary" class="ml-2">{{ editingBarrier ? '更新' : '登録' }}</v-btn>
+    <v-btn v-if="editingBarrier" @click="cancelEdit" color="error" class="ml-2">キャンセル</v-btn>
   </v-form>
 </template>
 
@@ -71,6 +72,19 @@ const resetForm = () => {
 const cancelEdit = () => {
   resetForm()
   emit('cancel-edit')
+}
+
+const getCurrentLocation = () => {
+  if ("geolocation" in navigator) {
+    navigator.geolocation.getCurrentPosition((position) => {
+      lat.value = position.coords.latitude
+      lng.value = position.coords.longitude
+    }, (error) => {
+      console.error("Error getting location:", error)
+    })
+  } else {
+    console.error("Geolocation is not available in this browser.")
+  }
 }
 
 watch(() => props.editingBarrier, (newBarrier) => {
