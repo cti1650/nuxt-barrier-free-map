@@ -21,7 +21,7 @@
             <div class="text-caption">{{ barrier.description }}</div>
           </div>
           
-          <div class="ml-auto">
+          <div v-if="isAuthenticated" class="ml-auto">
             <v-btn icon small @click.stop="$emit('edit-barrier', barrier)" class="mr-2">
               <v-icon color="grey lighten-1">mdi-pencil</v-icon>
             </v-btn>
@@ -48,14 +48,18 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import { useBarrierStore } from '~/stores/barrier'
+import { useNuxtApp } from '#app'
 
+const { $user } = useNuxtApp()
 const barrierStore = useBarrierStore()
 
 const deleteDialog = ref(false)
 const isDeleting = ref(false)
 const barrierToDelete = ref<Barrier | null>(null)
+
+const isAuthenticated = computed(() => $user.value !== null)
 
 const getBarrierTypeLabel = (type: string): string => {
   const types: { [key: string]: string } = {

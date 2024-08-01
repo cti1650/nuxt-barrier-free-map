@@ -16,28 +16,23 @@
             </v-card>
           </v-col>
           <v-col cols="12" md="4">
-            <template v-if="isAuthenticated">
-              <v-card elevation="2" class="mb-4">
-                <v-card-title>バリア情報登録</v-card-title>
-                <v-card-text>
-                  <BarrierForm 
-                    :editing-barrier="editingBarrier" 
-                    :map-ref="mapRef"
-                    @cancel-edit="cancelEdit" 
-                    @barrier-added="onBarrierAdded"
-                  />
-                </v-card-text>
-              </v-card>
-              <BarrierList @center-map="centerMap" @edit-barrier="editBarrier" />
-            </template>
-            <template v-else>
-              <v-card elevation="2" class="mb-4">
-                <v-card-title>登録されたバリア情報</v-card-title>
-                <v-card-text>
-                  <BarrierList @center-map="centerMap" />
-                </v-card-text>
-              </v-card>
-            </template>
+            <v-card v-if="isAuthenticated" elevation="2" class="mb-4">
+              <v-card-title>バリア情報登録</v-card-title>
+              <v-card-text>
+                <BarrierForm 
+                  :editing-barrier="editingBarrier" 
+                  :map-ref="mapRef"
+                  @cancel-edit="cancelEdit" 
+                  @barrier-added="onBarrierAdded"
+                />
+              </v-card-text>
+            </v-card>
+            <v-card elevation="2" class="mb-4">
+              <v-card-title>登録されたバリア情報</v-card-title>
+              <v-card-text>
+                <BarrierList @center-map="centerMap" @edit-barrier="editBarrier" />
+              </v-card-text>
+            </v-card>
           </v-col>
         </v-row>
       </v-container>
@@ -85,7 +80,12 @@ const centerMap = (barrier: Barrier) => {
 }
 
 const editBarrier = (barrier: Barrier) => {
-  editingBarrier.value = barrier
+  if (isAuthenticated.value) {
+    editingBarrier.value = barrier
+  } else {
+    showError.value = true
+    errorMessage.value = 'バリア情報の編集にはログインが必要です。'
+  }
 }
 
 const cancelEdit = () => {
@@ -98,6 +98,8 @@ const closeEditDialog = () => {
 
 const onBarrierAdded = () => {
   console.log('Barrier added')
+  // バリア追加後の処理（例：リストの更新）
+  barrierStore.fetchBarriers()
 }
 
 const logout = async () => {
@@ -119,10 +121,17 @@ const openLoginModal = () => {
 
 const onLoginSuccess = () => {
   console.log('Login successful')
+  // ログイン成功後の処理（例：バリア情報の再取得）
+  barrierStore.fetchBarriers()
 }
 
 const onLoginError = (error: string) => {
   showError.value = true
   errorMessage.value = error
 }
+
+// コンポーネントのマウント時にバリア情報を取得
+onMounted(() => {
+  barrierStore.fetchBarriers()
+})
 </script>
