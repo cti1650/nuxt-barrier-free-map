@@ -41,6 +41,9 @@ export default defineNuxtPlugin(() => {
   // Cloud Storageの取得
   const storage = getStorage(app)
 
+  // GoogleAuthProviderの初期化
+  const googleProvider = new GoogleAuthProvider()
+
   // 開発環境の場合、エミュレータに接続
   if (process.env.NODE_ENV === 'development' && process.env.USE_FIREBASE_EMULATOR === 'true') {
     connectFirestoreEmulator(db, 'localhost', 8080)
@@ -61,9 +64,8 @@ export default defineNuxtPlugin(() => {
   // 認証関連の関数を提供
   const provideAuth = {
     googleSignIn: async () => {
-      const provider = new GoogleAuthProvider()
       try {
-        const result = await signInWithPopup(auth, provider)
+        const result = await signInWithPopup(auth, googleProvider)
         return result.user
       } catch (error) {
         console.error('Google Sign In Error:', error)
@@ -87,7 +89,6 @@ export default defineNuxtPlugin(() => {
         return provideAuth.googleSignIn()
       }
     }
-    // 他の認証方法も同様に追加できます
   }
 
   return {
@@ -97,7 +98,8 @@ export default defineNuxtPlugin(() => {
       functions,
       storage,
       user: readonly(user),
-      provideAuth
+      provideAuth,
+      googleProvider  // 明示的に GoogleAuthProvider を提供
     }
   }
 })

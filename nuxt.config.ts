@@ -5,18 +5,23 @@ export default defineNuxtConfig({
     '@nuxtjs/tailwindcss',
     '@pinia/nuxt',
   ],
+
   css: ['vuetify/lib/styles/main.sass', '@mdi/font/css/materialdesignicons.min.css'],
+
   build: {
     transpile: ['vuetify', '@googlemaps/js-api-loader']
   },
+
   plugins: [
     '~/plugins/firebase.ts'
   ],
+
   vite: {
     define: {
       'process.env.DEBUG': false,
     },
   },
+
   runtimeConfig: {
     public: {
       firebaseConfig: {
@@ -31,8 +36,11 @@ export default defineNuxtConfig({
       googleMapsApiKey: process.env.GOOGLE_MAPS_API_KEY
     }
   },
+
   typescript: {
     strict: true
   },
+
   ssr: false,
+  compatibilityDate: '2024-08-01',
 })

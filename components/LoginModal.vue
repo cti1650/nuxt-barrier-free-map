@@ -22,7 +22,7 @@
             {{ isLogin ? 'ログイン' : '新規登録' }}
           </v-btn>
         </v-form>
-        <v-btn text color="secondary" class="mt-2" @click="toggleMode">
+        <v-btn variant="text" color="secondary" class="mt-2" @click="toggleMode">
           {{ isLogin ? '新規登録はこちら' : 'ログインはこちら' }}
         </v-btn>
         <v-divider class="my-4"></v-divider>
@@ -38,9 +38,9 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { useNuxtApp } from '#app'
-import { signInWithEmailAndPassword, createUserWithEmailAndPassword, signInWithPopup } from 'firebase/auth'
+import { signInWithEmailAndPassword, createUserWithEmailAndPassword } from 'firebase/auth'
 
-const { $auth, $googleProvider } = useNuxtApp()
+const { $auth, $provideAuth } = useNuxtApp()
 
 const dialog = ref(false)
 const email = ref('')
@@ -75,7 +75,11 @@ const toggleMode = () => {
 const signInWithGoogle = async () => {
   try {
     isLoading.value = true
-    await signInWithPopup($auth, $googleProvider)
+    if (process.env.NODE_ENV === 'development' && process.env.USE_FIREBASE_EMULATOR === 'true') {
+      await $provideAuth.emulatorGoogleSignIn()
+    } else {
+      await $provideAuth.googleSignIn()
+    }
     emit('login-success')
     dialog.value = false
   } catch (error) {
